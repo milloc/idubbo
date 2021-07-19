@@ -1,0 +1,17 @@
+idubbo:
+  client:
+    broadcastPort: 8002
+  provider:
+    broadcastPort: 8002
+    listenPort: 8003
+logging:
+  level:
+    io:
+      netty:
+        handler:
+          logging: trace
+    com:
+      milloc:
+        idubbo: trace
+server:
+  port: 8080
