@@ -5,7 +5,7 @@ import com.milloc.idubbo.domain.ProviderInfo;
 import com.milloc.idubbo.provider.config.ProviderContext;
 import com.milloc.idubbo.transport.Transports;
 import com.milloc.idubbo.domain.Payload;
-import com.milloc.idubbo.transport.codc.EventCodec;
+import com.milloc.idubbo.transport.EventCodec;
 import com.milloc.idubbo.domain.Type;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;

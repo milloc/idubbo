@@ -9,7 +9,7 @@ logging:
     io:
       netty:
         handler:
-          logging: trace
+          logging: off
     com:
       milloc:
         idubbo: trace

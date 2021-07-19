@@ -1,4 +1,4 @@
-package com.milloc.idubbo.transport.codc;
+package com.milloc.idubbo.transport;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

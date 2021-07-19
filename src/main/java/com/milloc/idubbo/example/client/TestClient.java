@@ -1,4 +1,4 @@
-package com.milloc.idubbo.test;
+package com.milloc.idubbo.example.client;
 
 import com.milloc.idubbo.client.Client;
 

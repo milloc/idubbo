@@ -2,7 +2,7 @@ package com.milloc.idubbo.provider.config;
 
 import com.milloc.idubbo.transport.Transports;
 import com.milloc.idubbo.domain.Payload;
-import com.milloc.idubbo.transport.codc.EventCodec;
+import com.milloc.idubbo.transport.EventCodec;
 import com.milloc.idubbo.domain.Type;
 import com.milloc.idubbo.provider.handler.PayloadHandler;
 import io.netty.channel.*;
@@ -49,12 +49,6 @@ public class ProviderListener implements InitializingBean {
             protected void initChannel(NioSocketChannel ch) {
                 ChannelPipeline pipeline = ch.pipeline();
                 pipeline.addLast(new LoggingHandler());
-                pipeline.addLast(new ChannelOutboundHandlerAdapter() {
-                    @Override
-                    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
-                        ctx.writeAndFlush(msg);
-                    }
-                });
                 pipeline.addLast(new EventCodec());
                 pipeline.addLast(new SimpleChannelInboundHandler<Payload<?>>() {
                     @Override

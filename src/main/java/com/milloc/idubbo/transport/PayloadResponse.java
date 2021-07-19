@@ -1,4 +1,4 @@
-package com.milloc.idubbo.transport.codc;
+package com.milloc.idubbo.transport;
 
 import com.milloc.idubbo.domain.Payload;
 import io.netty.channel.ChannelHandlerContext;
