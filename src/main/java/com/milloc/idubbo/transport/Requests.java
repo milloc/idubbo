@@ -27,7 +27,7 @@ public class Requests {
                 ChannelPipeline pipeline = ch.pipeline();
                 pipeline.addLast(new LoggingHandler())
                         .addLast(new EventCodec())
-                        .addLast(new PayloadResponse());
+                        .addLast(new EventResponse());
             }
         };
 
@@ -39,7 +39,7 @@ public class Requests {
                     .handler(channelHandler);
             ChannelFuture connect = bootstrap.connect(host, port).sync();
             ChannelFuture request = connect.channel().writeAndFlush(input).sync();
-            PayloadResponse response = (PayloadResponse) request.channel().pipeline().last();
+            EventResponse response = (EventResponse) request.channel().pipeline().last();
             request.addListener(rf -> request.channel().closeFuture());
             return (Payload<T>) response.getOutput();
         } finally {

@@ -38,13 +38,97 @@ public class Payload<T> {
 
 ## Netty通讯
 
-1. [EventCodec](src/main/java/com/milloc/idubbo/transport/codc/EventCodec.java)实现了通讯报文结构
+1. 通讯报文设计如下。[EventCodec](src/main/java/com/milloc/idubbo/transport/EventCodec.java)实现了Payload到报文的转码编码
 
 ```text
-   Idubbo\n // 头部
+   Idubbo\n // 固定头部
    {Type}\n // 类型
    {Content}\n // 内容
-   end // 结束
+   end // 固定结束
+```
+
+```java
+
+@Slf4j
+public class EventCodec extends MessageToMessageCodec<ByteBuf, Payload<?>> {
+    public static final String MSG_BEGIN = "Idubbo";
+    public static final String MSG_END = "end";
+
+    private final StringBuffer stringBuffer;
+    private final ObjectMapper objectMapper;
+
+    {
+        stringBuffer = new StringBuffer();
+        objectMapper = new ObjectMapper();
+    }
+
+    // 当往外发送的进行编码
+    @Override
+    protected void encode(ChannelHandlerContext ctx, Payload<?> msg, List<Object> out) throws Exception {
+        // 按照 MSG_BEGIN\n + type\n + conent\n + end 生成报文
+        String encodedMsg = eventToString(msg);
+        log.info("send msg \n{}", encodedMsg);
+        out.add(Unpooled.copiedBuffer(encodedMsg, Charset.defaultCharset()));
+    }
+
+    // 收到信息时进行解码
+    @Override
+    protected void decode(ChannelHandlerContext ctx, ByteBuf buf, List<Object> out) throws Exception {
+        // 1. 转化成字符串
+        int readableBytes = buf.readableBytes();
+        if (readableBytes == 0) {
+            return;
+        }
+        byte[] bytes = new byte[readableBytes];
+        buf.readBytes(bytes);
+        String msg = new String(bytes);
+
+        // 2. 拼接到 stringBuffer 中
+        if (stringBuffer.length() == 0 && !StringUtils.startsWith(msg, MSG_BEGIN)) {
+            log.info("illegal msg {}", msg);
+            return;
+        } else {
+            stringBuffer.append(msg);
+        }
+
+        // 3. 如果遇到结束标志，就停止编码
+        if (StringUtils.endsWith(msg, MSG_END)) {
+            String s = stringBuffer.toString();
+            Payload<Object> payload = stringToEvent(s);
+            out.add(payload);
+            log.info("receive msg {}", payload);
+        }
+    }
+
+    private String eventToString(Payload<?> msg) throws JsonProcessingException {
+        StringJoiner joiner = new StringJoiner("\n");
+        joiner.add(MSG_BEGIN);
+        joiner.add(msg.getType().desc);
+        if (msg.getContent() != null) {
+            joiner.add(objectMapper.writeValueAsString(msg.getContent()));
+        }
+        joiner.add(MSG_END);
+        return joiner.toString();
+    }
+
+    private Payload<Object> stringToEvent(String s) throws com.fasterxml.jackson.core.JsonProcessingException {
+        String[] parts = s.split("\n");
+        Preconditions.checkArgument(parts.length >= 2);
+        String type = parts[1];
+        Type eventType = Type.of(type);
+        Objects.requireNonNull(eventType);
+        Class<?> contentClazz = eventType.contentType;
+        Objects.requireNonNull(contentClazz);
+        Payload<Object> payload = new Payload<>();
+        payload.setType(eventType);
+        if (contentClazz != Void.class) {
+            String content = parts[2];
+            Object o = objectMapper.readValue(content, contentClazz);
+            payload.setContent(o);
+        }
+        return payload;
+    }
+}
 ```
 
 2. [ProviderListener](src/main/java/com/milloc/idubbo/provider/config/ProviderListener.java)实现了Provider服务功能的实现
@@ -251,5 +335,5 @@ public class PayloadResponse extends ChannelInboundHandlerAdapter {
 ## 更多内容
 
 1. [PublishRule](src/main/java/com/milloc/idubbo/provider/publish/PublishRule.java)
-   与[SubscribeRule](src/main/java/com/milloc/idubbo/client/subscribe/SubscribeRule.java)可自定义服务发布策略
-2. [LoadBalanceRule](src/main/java/com/milloc/idubbo/client/loadblance/LoadBalanceRule.java)可定义Client负载策略
+   与[SubscribeRule](src/main/java/com/milloc/idubbo/client/subscribe/SubscribeRule.java)服务的发现策略
+2. [LoadBalanceRule](src/main/java/com/milloc/idubbo/client/loadblance/LoadBalanceRule.java)Client负载策略

@@ -13,7 +13,7 @@ import java.util.concurrent.SynchronousQueue;
  * @author gongdeming
  * @date 2021-07-14
  */
-public class PayloadResponse extends ChannelInboundHandlerAdapter {
+public class EventResponse extends ChannelInboundHandlerAdapter {
     private final SynchronousQueue<Payload<?>> synchronousQueue = new SynchronousQueue<>();
 
     @Override

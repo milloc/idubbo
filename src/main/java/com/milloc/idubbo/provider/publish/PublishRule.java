@@ -11,6 +11,8 @@ import com.milloc.idubbo.provider.config.ProviderContext;
 public interface PublishRule {
     /**
      * 发布
+     *
+     * @param providerContext Provider上下文
      */
     void publish(ProviderContext providerContext);
 }
